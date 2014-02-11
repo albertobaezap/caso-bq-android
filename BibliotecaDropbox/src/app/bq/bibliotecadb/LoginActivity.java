@@ -1,4 +1,4 @@
-package app.bq.bibliotecadropbox;
+package app.bq.bibliotecadb;
 
 import com.dropbox.sync.android.DbxAccountManager;
 
@@ -32,7 +32,7 @@ public class LoginActivity extends Activity {
 	/**
 	 * The default email to populate the email field with.
 	 */
-	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
+	public static final String EXTRA_EMAIL = "alberto.baezap@gmail.com";
 
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -53,6 +53,9 @@ public class LoginActivity extends Activity {
 	// Elementos de conectividad con Dropbox.
 	private DbxAccountManager mDbxAcctMgr;
 	static final int REQUEST_LINK_TO_DBX = 0;  // This value is up to you
+	
+	private static final String APP_KEY = "gr0g9h5f62jzlew";
+	private static final String APP_SECRET = "l5rty2j1dfmeqtq";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -60,8 +63,7 @@ public class LoginActivity extends Activity {
 		// Referencia a la interfaz gráfica.
 		setContentView(R.layout.activity_login);
 		
-		 mDbxAcctMgr = DbxAccountManager.getInstance(getApplicationContext(), "panamnav.sl@gmail.com", "wayra48991");
-
+		
 		// Set up the login form.
 		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
 		mEmailView = (EditText) findViewById(R.id.email);
@@ -90,6 +92,7 @@ public class LoginActivity extends Activity {
 					@Override
 					public void onClick(View view) {
 						//attemptLogin();
+						mDbxAcctMgr = DbxAccountManager.getInstance(getApplicationContext(), APP_KEY, APP_SECRET);
 						mDbxAcctMgr.startLink(LoginActivity.this, REQUEST_LINK_TO_DBX);
 					}
 				});

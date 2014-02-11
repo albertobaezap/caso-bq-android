@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="app.bq.bibliotecadropbox"
+    package="app.bq.bibliotecadb"
     android:versionCode="1"
     android:versionName="1.0" >
 
@@ -17,7 +17,7 @@
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
-            android:name="app.bq.bibliotecadropbox.LoginActivity"
+            android:name="app.bq.bibliotecadb.LoginActivity"
             android:label="@string/app_name" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -30,7 +30,7 @@
 		  android:name="com.dropbox.client2.android.AuthActivity"
 		  android:launchMode="singleTask" >
 		  <intent-filter>
-		    <data android:scheme="db-panamnav.sl@gmail.com" />
+		    <data android:scheme="db-gr0g9h5f62jzlew" />
 		    <action android:name="android.intent.action.VIEW" />
 		    <category android:name="android.intent.category.BROWSABLE" />
 		    <category android:name="android.intent.category.DEFAULT" />
