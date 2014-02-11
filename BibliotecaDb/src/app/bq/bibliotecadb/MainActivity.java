@@ -14,6 +14,7 @@ import com.dropbox.client2.session.AppKeyPair;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.util.Log;
 import android.widget.ArrayAdapter;
 
@@ -32,15 +33,16 @@ public class MainActivity extends ListActivity {
 	//Elementos de almacenamiento de datos
 	private ArrayList<String> mFileList;
 	
+	//Elementos adicionales
+	
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //setContentView(R.layout.activity_main);
         
         //Inicio de sesión
         startSession();
-                
-        
+  
     }
     /**
      * Después de una autentificación vuelve a onResume para terminar de cerrar el inicio
@@ -73,7 +75,7 @@ public class MainActivity extends ListActivity {
     private void startSession(){
     	
     	 mAppKeys = new AppKeyPair(APP_KEY, APP_SECRET); //Guarda la clave y secreto de la API
-         mSession = new AndroidAuthSession(mAppKeys); //Guarda la sesiónd de autentificación
+         mSession = new AndroidAuthSession(mAppKeys); //Guarda la sesión de autentificación
          mApi = new DropboxAPI<AndroidAuthSession>(mSession); //Nueva instancia de sesión
          mApi.getSession().startOAuth2Authentication(MainActivity.this); //Inicia intento de autentificación
          
@@ -87,11 +89,13 @@ public class MainActivity extends ListActivity {
     */
    private class ListFiles extends AsyncTask<Void, Void, Boolean>{
 	   
-	   List<DeltaEntry<Entry>> mDeltaEntryList;
-	   
+	   private ProgressDialog mProgressDialog;
+
 	   @Override
 	   protected void onPreExecute(){
 		   super.onPreExecute();
+		   
+		   createProgressDialog();	  
 		   
 	   }
 	   
@@ -110,12 +114,12 @@ public class MainActivity extends ListActivity {
 			
 			DeltaPage<Entry> existingEntry = mApi.delta("");
 			
-			mDeltaEntryList = existingEntry.entries; //Se realiza conversión a lista para poder iterarla
+			 List<DeltaEntry<Entry>> deltaEntryList = existingEntry.entries; //Se realiza conversión a lista para poder iterarla
 			
 			mFileList = new ArrayList<String>(); //Se crea la lista donde se almacenarán los datos
 			
 			//Iteración de la lista que muestra como resultado los nombres de los archivos.
-			for (DeltaEntry<Entry> e : mDeltaEntryList){
+			for (DeltaEntry<Entry> e : deltaEntryList){
 				mFileList.add(e.metadata.fileName());
 				Log.i("out", e.metadata.fileName());
 			}
@@ -135,7 +139,21 @@ public class MainActivity extends ListActivity {
 	public void onPostExecute(Boolean result){
 		super.onPostExecute(result);
 		
+		mProgressDialog.dismiss();
 		setListAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
+	}
+	
+	/**
+	 * Crea el popup con la barra de progreso mientras espera a que se obtengan los archivos.
+	 */
+	public void createProgressDialog(){
+		
+		mProgressDialog = new ProgressDialog(MainActivity.this);
+        mProgressDialog.setMessage(getString(R.string.progress_dialog_text));
+        mProgressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        
+        mProgressDialog.show();
+		
 	}
 	   
    }
