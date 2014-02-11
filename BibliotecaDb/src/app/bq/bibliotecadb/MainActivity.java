@@ -14,8 +14,8 @@ public class MainActivity extends Activity {
 	private DbxAccountManager mDbxAcctMgr;
 	static final int REQUEST_LINK_TO_DBX = 0;
 	// Claves para la sincronización de la aplicación con Dropbox.
-	private static final String APP_KEY = "gr0g9h5f62jzlew";
-	private static final String APP_SECRET = "l5rty2j1dfmeqtq";
+	private static final String APP_KEY = "d7i4j7ctpt5hn1q";
+	private static final String APP_SECRET = "zxe1ea2972uyi62";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
