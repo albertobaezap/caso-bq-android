@@ -4,18 +4,15 @@ import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.session.AppKeyPair;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.app.Activity;
-import android.content.Intent;
 import android.util.Log;
-import android.view.Menu;
+import android.widget.ListView;
 
 public class MainActivity extends Activity {
 
 	
-	// Elementos de conectividad con Dropbox.
-	//private DbxAccountManager mDbxAcctMgr;
-	static final int REQUEST_LINK_TO_DBX = 0;
 	// Claves para la sincronización de la aplicación con Dropbox.
 	private static final String APP_KEY = "d7i4j7ctpt5hn1q";
 	private static final String APP_SECRET = "zxe1ea2972uyi62";
@@ -25,24 +22,20 @@ public class MainActivity extends Activity {
 	private AndroidAuthSession mSession;
 	private DropboxAPI<AndroidAuthSession> mApi;
 	
+	//Elementos de referencia a la interfaz gráfica
+	private ListView mListView;
+	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         
-        /*
+        //Inicio de sesión
+        startSession();
         
-        //Este método obtendrá una instancia de nuestra cuenta de Dropbox.
-        mDbxAcctMgr = DbxAccountManager.getInstance(getApplicationContext(), APP_KEY, APP_SECRET);
-        //Este método sincroniza la cuenta con Dropbox.
-		mDbxAcctMgr.startLink(MainActivity.this, REQUEST_LINK_TO_DBX);
-		
-		*/
-        
-        mAppKeys = new AppKeyPair(APP_KEY, APP_SECRET); //Guarda la clave y secreto de la API
-        mSession = new AndroidAuthSession(mAppKeys); //Guarda la sesiónd de autentificación
-        mApi = new DropboxAPI<AndroidAuthSession>(mSession); //Nueva instancia de sesión
-        mApi.getSession().startOAuth2Authentication(MainActivity.this); //Inicia intento de autentificación
+       
+        //Referencias a la interfaz
+        mListView = (ListView) findViewById(R.id.file_list);
         
         
     }
@@ -54,46 +47,60 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume(){
     		super.onResume();
+    		
     		if(mApi.getSession().authenticationSuccessful()){
     			try{
+    				//Necesario para completar la autentificación
     				mApi.getSession().finishAuthentication();
-    				Log.d("out"," Auth succesful");
-    				mSession.unlink();
+    				
+    				//Llama a la funcionalidad principal de la aplicación para listar los archivos
+    				new ListFiles().execute();
+    				Log.d("out","Auth succesful");
     			} catch (IllegalStateException e) {
 					e.printStackTrace();
-				}
+				} 
     		} else Log.d("out", "Auth failed");
     		
     }
     
-    /*
-    
     /**
-     * La sincronización se realizará a través de una actividad externa por lo que el resultado
-     * se tratará en onActivityResult() si la autentificación no da ningún error.
-     *
-    @Override
-	public void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (requestCode == REQUEST_LINK_TO_DBX) {
-	        if (resultCode == Activity.RESULT_OK) {
-	        	// ... Start using Dropbox files.
-	            Log.d("out", "Auth succesful");
-	        } else {
-	            // ... Link failed or was cancelled by the user.
-	        	Log.d("out", "Auth failed");
-	        }
-	    } else {
-	        super.onActivityResult(requestCode, resultCode, data);
-	    }
-	}
-    */
-
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
-        return true;
+     * Este método realiza el inicio de la sesión en Dropbox autentificándose en la red con
+     * las claves que otorgan derechos a esta aplicación para utilizar la API.
+     */
+    private void startSession(){
+    	
+    	 mAppKeys = new AppKeyPair(APP_KEY, APP_SECRET); //Guarda la clave y secreto de la API
+         mSession = new AndroidAuthSession(mAppKeys); //Guarda la sesiónd de autentificación
+         mApi = new DropboxAPI<AndroidAuthSession>(mSession); //Nueva instancia de sesión
+         mApi.getSession().startOAuth2Authentication(MainActivity.this); //Inicia intento de autentificación
+         
     }
+    
+
+   private class ListFiles extends AsyncTask<Void, Void, Boolean>{
+	   
+	   @Override
+	   protected void onPreExecute(){
+		   super.onPreExecute();
+		   
+	   }
+
+	@Override
+	protected Boolean doInBackground(Void... params) {
+		
+
+
+		
+		
+		return false;
+	}
+	
+	@Override
+	public void onPostExecute(Boolean result){
+		super.onPostExecute(result);
+		//mSession.unlink();
+	}
+	   
+   }
     
 }
