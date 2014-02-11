@@ -6,12 +6,13 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
-import android.view.Menu;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -49,14 +50,17 @@ public class LoginActivity extends Activity {
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
 	
-	// Elementos de conectividad con Dropbox
+	// Elementos de conectividad con Dropbox.
 	private DbxAccountManager mDbxAcctMgr;
+	static final int REQUEST_LINK_TO_DBX = 0;  // This value is up to you
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
+		// Referencia a la interfaz gráfica.
 		setContentView(R.layout.activity_login);
+		
+		 mDbxAcctMgr = DbxAccountManager.getInstance(getApplicationContext(), "panamnav.sl@gmail.com", "wayra48991");
 
 		// Set up the login form.
 		mEmail = getIntent().getStringExtra(EXTRA_EMAIL);
@@ -85,16 +89,24 @@ public class LoginActivity extends Activity {
 				new View.OnClickListener() {
 					@Override
 					public void onClick(View view) {
-						attemptLogin();
+						//attemptLogin();
+						mDbxAcctMgr.startLink(LoginActivity.this, REQUEST_LINK_TO_DBX);
 					}
 				});
 	}
-
+	
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
-		super.onCreateOptionsMenu(menu);
-		getMenuInflater().inflate(R.menu.login, menu);
-		return true;
+	public void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if (requestCode == REQUEST_LINK_TO_DBX) {
+	        if (resultCode == Activity.RESULT_OK) {
+	            Log.d("out", "Auth succesful");
+	        } else {
+	            // ... Link failed or was cancelled by the user.
+	        	Log.d("out", "Auth failed");
+	        }
+	    } else {
+	        super.onActivityResult(requestCode, resultCode, data);
+	    }
 	}
 
 	/**
