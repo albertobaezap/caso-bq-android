@@ -1,5 +1,6 @@
 package app.bq.bibliotecadb;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.dropbox.client2.DropboxAPI;
@@ -12,11 +13,11 @@ import com.dropbox.client2.session.AppKeyPair;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.app.Activity;
+import android.app.ListActivity;
 import android.util.Log;
-import android.widget.ListView;
+import android.widget.ArrayAdapter;
 
-public class MainActivity extends Activity {
+public class MainActivity extends ListActivity {
 
 	
 	// Claves para la sincronización de la aplicación con Dropbox.
@@ -28,21 +29,17 @@ public class MainActivity extends Activity {
 	private AndroidAuthSession mSession;
 	private DropboxAPI<AndroidAuthSession> mApi;
 	
-	//Elementos de referencia a la interfaz gráfica
-	private ListView mListView;
+	//Elementos de almacenamiento de datos
+	private ArrayList<String> mFileList;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        //setContentView(R.layout.activity_main);
         
         //Inicio de sesión
         startSession();
-        
-       
-        //Referencias a la interfaz
-        mListView = (ListView) findViewById(R.id.file_list);
-        
+                
         
     }
     /**
@@ -90,6 +87,8 @@ public class MainActivity extends Activity {
     */
    private class ListFiles extends AsyncTask<Void, Void, Boolean>{
 	   
+	   List<DeltaEntry<Entry>> mDeltaEntryList;
+	   
 	   @Override
 	   protected void onPreExecute(){
 		   super.onPreExecute();
@@ -111,10 +110,13 @@ public class MainActivity extends Activity {
 			
 			DeltaPage<Entry> existingEntry = mApi.delta("");
 			
-			List<DeltaEntry<Entry>> de = existingEntry.entries; //Se realiza conversión a lista para poder iterarla
+			mDeltaEntryList = existingEntry.entries; //Se realiza conversión a lista para poder iterarla
+			
+			mFileList = new ArrayList<String>(); //Se crea la lista donde se almacenarán los datos
 			
 			//Iteración de la lista que muestra como resultado los nombres de los archivos.
-			for (DeltaEntry<Entry> e : de){
+			for (DeltaEntry<Entry> e : mDeltaEntryList){
+				mFileList.add(e.metadata.fileName());
 				Log.i("out", e.metadata.fileName());
 			}
 			
@@ -122,15 +124,18 @@ public class MainActivity extends Activity {
 			e.printStackTrace();
 		}
 
-		
-		
 		return false;
 	}
 	
+	/**
+	 * Cuando termine de listar todos los archivos, se llama a onPostExecute donde se va a 
+	 * añadir el adaptador para la lista, que incluirá todos los datos incluidos en el Array.
+	 */
 	@Override
 	public void onPostExecute(Boolean result){
 		super.onPostExecute(result);
-		//mSession.unlink();
+		
+		setListAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
 	}
 	   
    }
