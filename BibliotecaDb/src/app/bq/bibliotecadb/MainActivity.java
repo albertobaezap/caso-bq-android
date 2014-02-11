@@ -1,7 +1,13 @@
 package app.bq.bibliotecadb;
 
+import java.util.List;
+
 import com.dropbox.client2.DropboxAPI;
+import com.dropbox.client2.DropboxAPI.DeltaEntry;
+import com.dropbox.client2.DropboxAPI.DeltaPage;
+import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
+import com.dropbox.client2.exception.DropboxException;
 import com.dropbox.client2.session.AppKeyPair;
 
 import android.os.AsyncTask;
@@ -55,11 +61,11 @@ public class MainActivity extends Activity {
     				
     				//Llama a la funcionalidad principal de la aplicación para listar los archivos
     				new ListFiles().execute();
-    				Log.d("out","Auth succesful");
+    				Log.i("out","Auth succesful");
     			} catch (IllegalStateException e) {
 					e.printStackTrace();
 				} 
-    		} else Log.d("out", "Auth failed");
+    		} else Log.i("out", "Auth failed");
     		
     }
     
@@ -76,7 +82,12 @@ public class MainActivity extends Activity {
          
     }
     
-
+   /**
+    * 
+    * Esta clase llevará a cabo la obtención de ficheros desde el sistema de ficheros original
+    * para insertarlos en una lista y luego poder trabajar con ellos.
+    *
+    */
    private class ListFiles extends AsyncTask<Void, Void, Boolean>{
 	   
 	   @Override
@@ -84,11 +95,32 @@ public class MainActivity extends Activity {
 		   super.onPreExecute();
 		   
 	   }
+	   
+   /**
+	 * El método delta obtiene toda la lista de archivos que se encuentran todo el sistema
+	 * de ficheros en Dropbox cuando se llama por primera vez. Se recomienda utilizar delta en 
+	 * vez de metadata recursivamente porque implica menos llamadas a la red y es más rápido.
+	 * TODO La lectura de ficheros es lenta, incluir una barra de progreso.
+	 */
 
 	@Override
 	protected Boolean doInBackground(Void... params) {
 		
-
+		
+		try {
+			
+			DeltaPage<Entry> existingEntry = mApi.delta("");
+			
+			List<DeltaEntry<Entry>> de = existingEntry.entries; //Se realiza conversión a lista para poder iterarla
+			
+			//Iteración de la lista que muestra como resultado los nombres de los archivos.
+			for (DeltaEntry<Entry> e : de){
+				Log.i("out", e.metadata.fileName());
+			}
+			
+		} catch (DropboxException e) {
+			e.printStackTrace();
+		}
 
 		
 		
