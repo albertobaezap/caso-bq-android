@@ -16,14 +16,13 @@ import android.os.Bundle;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.util.Log;
-import android.widget.ArrayAdapter;
 
 public class MainActivity extends ListActivity {
 
 	
 	// Claves para la sincronización de la aplicación con Dropbox.
-	private static final String APP_KEY = "d7i4j7ctpt5hn1q";
-	private static final String APP_SECRET = "zxe1ea2972uyi62";
+	public static final String APP_KEY = "d7i4j7ctpt5hn1q";
+	public static final String APP_SECRET = "zxe1ea2972uyi62";
 
 	//Elementos de conectividad con Dropbox.
 	private AppKeyPair mAppKeys;
@@ -31,7 +30,7 @@ public class MainActivity extends ListActivity {
 	private DropboxAPI<AndroidAuthSession> mApi;
 	
 	//Elementos de almacenamiento de datos
-	private ArrayList<String> mFileList;
+	private ArrayList<Book> mFileList;
 	
 	//Elementos adicionales
 	
@@ -114,14 +113,20 @@ public class MainActivity extends ListActivity {
 			
 			DeltaPage<Entry> existingEntry = mApi.delta("");
 			
-			 List<DeltaEntry<Entry>> deltaEntryList = existingEntry.entries; //Se realiza conversión a lista para poder iterarla
+			List<DeltaEntry<Entry>> deltaEntryList = existingEntry.entries; //Se realiza conversión a lista para poder iterarla
 			
-			mFileList = new ArrayList<String>(); //Se crea la lista donde se almacenarán los datos
+			mFileList = new ArrayList<Book>(); //Se crea la lista donde se almacenarán los datos
 			
 			//Iteración de la lista que muestra como resultado los nombres de los archivos.
 			for (DeltaEntry<Entry> e : deltaEntryList){
-				mFileList.add(e.metadata.fileName());
-				Log.i("out", e.metadata.fileName());
+				
+				//Se introducen los datos necesarios en la nueva clase Book para hacer más sencillo su gestión
+				Book book = new Book(e.metadata.fileName(),e.metadata.modified, e.metadata.hashCode());
+				
+				//Añade a la lista cada libro
+				mFileList.add(book);
+				
+				Log.i("out", book.getTitle() + " " + book.getDate() + " " + book.getId());
 			}
 			
 		} catch (DropboxException e) {
@@ -140,7 +145,11 @@ public class MainActivity extends ListActivity {
 		super.onPostExecute(result);
 		
 		mProgressDialog.dismiss();
-		setListAdapter(new ArrayAdapter<String>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
+		//setListAdapter(new ArrayAdapter<Book>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
+		
+		//Construimos un nuevo adaptador para introducir los datos en la lista
+		BookAdapter bookAdapter = new BookAdapter(MainActivity.this, R.layout.activity_main, mFileList);
+		setListAdapter(bookAdapter);
 	}
 	
 	/**
