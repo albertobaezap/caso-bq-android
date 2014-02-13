@@ -1,12 +1,12 @@
 package app.bq.bibliotecadb;
 
-public class Book {
+public class BookElement {
 	
 	private String mTitle;
 	private String mDate;
 	private int mId;
 	
-	public Book(String t, String d, int i){
+	public BookElement(String t, String d, int i){
 		
 		mTitle = t;
 		mDate = d;

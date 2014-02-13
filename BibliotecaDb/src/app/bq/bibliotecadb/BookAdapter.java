@@ -16,11 +16,11 @@ import android.widget.TextView;
  * mediante un ArrayAdapter normal.
  * 
  */
-public class BookAdapter extends ArrayAdapter<Book> {
+public class BookAdapter extends ArrayAdapter<BookElement> {
 	
-	private ArrayList<Book> mFileList;
+	private ArrayList<BookElement> mFileList;
 
-	public BookAdapter(Context context, int textViewResourceId, ArrayList<Book> objects) {
+	public BookAdapter(Context context, int textViewResourceId, ArrayList<BookElement> objects) {
 		super(context, textViewResourceId, objects);
 		
 		this.mFileList = objects;
@@ -43,7 +43,7 @@ public class BookAdapter extends ArrayAdapter<Book> {
 		}
 		
 		//El elemento del que vamos a obtener los datos
-		Book book = mFileList.get(position);
+		BookElement book = mFileList.get(position);
 		
 		//Introducimos los datos en el TextView correspondiente para que aparezca en la lista
 		if (book != null){
