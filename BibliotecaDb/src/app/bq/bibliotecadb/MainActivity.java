@@ -131,13 +131,11 @@ public class MainActivity extends ListActivity {
 			//Iteración de la lista que muestra como resultado los nombres de los archivos.
 			for (DeltaEntry<Entry> e : deltaEntryList){
 				
-				//Se introducen los datos necesarios en la nueva clase BookElement para hacer más sencillo su gestión
-				BookElement book = new BookElement(e.metadata.fileName(),e.metadata.modified, e.metadata.hashCode());
+				//BookElement book = new BookElement(e.metadata.fileName(),e.metadata.modified, e.metadata.hashCode());
 				
 				//Comprueba que no sea un directorio y que sea .epub y añade a la lista cada libro
 				if ((!e.metadata.isDir) && (isEpub(e.metadata.fileName()))) {
-					
-					mFileList.add(book);
+
 					
 					//Se obtiene el directorio de almacenamiento externo para guardar los archivos temporales
 					String filePath =  Environment.getExternalStorageDirectory().toString();
@@ -234,11 +232,17 @@ public class MainActivity extends ListActivity {
 
 	            //Carga el Book al epubreader para leer los metadatos
 	            Book book = (new EpubReader()).readEpub(epubInputStream);
+	           
 
 	            //Obtiene los metadatos necesarios
 	            Log.i("author", "Author: " + book.getMetadata().getAuthors());
 	            Log.i("title", "Title: " + book.getTitle());
 	            Log.i("date", "Date: " + book.getMetadata().getDates());
+	            
+	            //Se introducen los datos necesarios en la nueva clase BookElement para hacer más sencillo su gestión
+	            BookElement book_element = new BookElement(book.getTitle(), book.getMetadata().getDates(), book.getMetadata().getAuthors().toString(),  0);
+
+				mFileList.add(book_element);
 
 	            /* Log the book's coverimage property */
 	            // Bitmap coverImage =

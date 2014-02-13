@@ -52,7 +52,7 @@ public class BookAdapter extends ArrayAdapter<BookElement> {
 			TextView date = (TextView) v.findViewById(R.id.list_date);
 			
 			if (label!=null) label.setText(book.getTitle());
-			if (date!=null) date.setText(book.getDate());
+			if (date!=null) date.setText(book.getAuthor() + " " + book.getDate());
 			
 		}
 		
