@@ -26,8 +26,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     
     private static final String SQL_CREATE_ENTRIES =
         "CREATE TABLE " + TABLE_NAME + " (" +
-        "COLUMN_1" + TEXT_TYPE + COMMA_SEP +
-        "COLUMN_2" + TEXT_TYPE + 
+        COLUMN_1 + TEXT_TYPE + COMMA_SEP +
+        COLUMN_2 + TEXT_TYPE + 
         " )";
 
     private static final String SQL_DELETE_ENTRIES =

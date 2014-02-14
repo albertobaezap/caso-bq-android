@@ -29,7 +29,7 @@ public class BookElement {
 		mAuthor = a;
 		mId = i;
 		
-		format();
+		//format();
 		
 	}
 	

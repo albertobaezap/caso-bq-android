@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import nl.siegmann.epublib.domain.Book;
+import nl.siegmann.epublib.domain.Date;
 import nl.siegmann.epublib.epub.EpubReader;
 
 import com.dropbox.client2.DropboxAPI;
@@ -147,37 +148,39 @@ public class MainActivity extends ListActivity {
 				   //Obtiene el cursor al primer elemento, si existe es que se encuentra en la bd
 				    Cursor c = mDB.rawQuery(sql, null);
 					if (c.moveToFirst()){
-						
+						//TODO Implementar correcto parseo de fecha
+						List<Date> ld = null ;
 						Log.i("out", "Record exists");
+						BookElement book_element = new BookElement(c.getString(0), ld, c.getString(1), 0);
+						insertElement(book_element);
 					//Si no se encuentra lo añadimos	
 					}else {
 						
-					   // Create a new map of values, where column names are the keys
-					   ContentValues values = new ContentValues();
-					   values.put("Title", e.metadata.fileName());
-					   values.put("Date", e.metadata.modified);
-					   mDB.insert("Book", null, values);
-					   Log.i("out", "Record doesn't exist yet but was inserted.");
+					    // Create a new map of values, where column names are the keys
+					    ContentValues values = new ContentValues();
+					    values.put("Title", e.metadata.fileName());
+					    values.put("Date", e.metadata.modified);
+					    mDB.insert("Book", null, values);
+					    Log.i("out", "Record doesn't exist yet but was inserted.");
+			
+					
+						//Se obtiene el directorio de almacenamiento externo para guardar los archivos temporales
+						String filePath =  Environment.getExternalStorageDirectory().toString();
+						File file = new File(filePath + "/temp.epub");
+						Log.i("out",file.getAbsolutePath());
+						
+						//Se crea un nuevo archivo para descargar desde la carpeta de Dropbox
+						FileOutputStream outputStream = new FileOutputStream(file);
+						DropboxFileInfo info = mApi.getFile(e.metadata.parentPath()+e.metadata.fileName(), null, outputStream, null);
+						Log.i("out", info.getMetadata().parentPath() + "  " + info.getMetadata().fileName());
+						
+						//Se llama a la función que lee los metadatos del archivo
+						readEpub(file.getAbsolutePath());
+						
+						//Se limpian los archivos temporales y se libera memoria
+						file.delete();
+						outputStream.close();
 					}
-					//TODO Si el elemento existe no hay que descargarlo pero aún no se han podido hacer las pruebas
-
-					
-					//Se obtiene el directorio de almacenamiento externo para guardar los archivos temporales
-					String filePath =  Environment.getExternalStorageDirectory().toString();
-					File file = new File(filePath + "/temp.epub");
-					Log.i("out",file.getAbsolutePath());
-					
-					//Se crea un nuevo archivo para descargar desde la carpeta de Dropbox
-					FileOutputStream outputStream = new FileOutputStream(file);
-					DropboxFileInfo info = mApi.getFile(e.metadata.parentPath()+e.metadata.fileName(), null, outputStream, null);
-					Log.i("out", info.getMetadata().parentPath() + "  " + info.getMetadata().fileName());
-					
-					//Se llama a la función que lee los metadatos del archivo
-					readEpub(file.getAbsolutePath());
-					
-					//Se limpian los archivos temporales y se libera memoria
-					file.delete();
-					outputStream.close();
 				}
 				
 				//Log.i("out", book.getTitle() + " " + book.getDate() + " " + book.getId());
@@ -267,8 +270,7 @@ public class MainActivity extends ListActivity {
 	            
 	            //Se introducen los datos necesarios en la nueva clase BookElement para hacer más sencillo su gestión
 	            BookElement book_element = new BookElement(book.getTitle(), book.getMetadata().getDates(), book.getMetadata().getAuthors().toString(),  0);
-
-				mFileList.add(book_element);
+	            insertElement(book_element);
 
 	            /* Log the book's coverimage property */
 	            // Bitmap coverImage =
@@ -296,5 +298,9 @@ public class MainActivity extends ListActivity {
 
 	    
 	}
+   
+   public void insertElement(BookElement book_element){
+		mFileList.add(book_element);
+   }
     
 }
