@@ -26,6 +26,9 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 public class MainActivity extends ListActivity {
@@ -44,6 +47,7 @@ public class MainActivity extends ListActivity {
 	private ArrayList<BookElement> mFileList;
 	
 	//Elementos adicionales
+	SQLiteDatabase mDB;
 	
 	
     @Override
@@ -52,6 +56,9 @@ public class MainActivity extends ListActivity {
         
         //Inicio de sesión
         startSession();
+        
+        //Crea la base de datos
+        createDB();
   
     }
     /**
@@ -131,10 +138,28 @@ public class MainActivity extends ListActivity {
 			//Iteración de la lista que muestra como resultado los nombres de los archivos.
 			for (DeltaEntry<Entry> e : deltaEntryList){
 				
-				//BookElement book = new BookElement(e.metadata.fileName(),e.metadata.modified, e.metadata.hashCode());
-				
 				//Comprueba que no sea un directorio y que sea .epub y añade a la lista cada libro
 				if ((!e.metadata.isDir) && (isEpub(e.metadata.fileName()))) {
+
+					//Esta consulta comprobará si el título ya está en la base de datos
+				    String sql = "SELECT * FROM Book WHERE Title = '" + e.metadata.fileName() + "'";	
+				   
+				   //Obtiene el cursor al primer elemento, si existe es que se encuentra en la bd
+				    Cursor c = mDB.rawQuery(sql, null);
+					if (c.moveToFirst()){
+						
+						Log.i("out", "Record exists");
+					//Si no se encuentra lo añadimos	
+					}else {
+						
+					   // Create a new map of values, where column names are the keys
+					   ContentValues values = new ContentValues();
+					   values.put("Title", e.metadata.fileName());
+					   values.put("Date", e.metadata.modified);
+					   mDB.insert("Book", null, values);
+					   Log.i("out", "Record doesn't exist yet but was inserted.");
+					}
+					//TODO Si el elemento existe no hay que descargarlo pero aún no se han podido hacer las pruebas
 
 					
 					//Se obtiene el directorio de almacenamiento externo para guardar los archivos temporales
@@ -178,6 +203,7 @@ public class MainActivity extends ListActivity {
 		super.onPostExecute(result);
 		
 		mProgressDialog.dismiss();
+		mDB.close();
 		//setListAdapter(new ArrayAdapter<BookElement>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
 		
 		//Construimos un nuevo adaptador para introducir los datos en la lista
@@ -258,5 +284,17 @@ public class MainActivity extends ListActivity {
 	}
 	   
    }
+   
+   /**
+    * Esta función crea la base de datos inicial y la obtiene en modo escritura
+    */
+   public void createDB(){
+	   
+	   DatabaseHelper mDbHelper = new DatabaseHelper(this);
+	   
+	   mDB = mDbHelper.getWritableDatabase();
+
+	    
+	}
     
 }

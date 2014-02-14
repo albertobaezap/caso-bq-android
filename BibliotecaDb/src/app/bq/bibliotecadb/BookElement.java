@@ -2,6 +2,8 @@ package app.bq.bibliotecadb;
 
 import java.util.List;
 
+import android.util.Log;
+
 import nl.siegmann.epublib.domain.Date;
 
 /**
@@ -54,12 +56,9 @@ public class BookElement {
 	private void format(){
 				
 		for (Date d : mDateRaw){
-			if (d.getEvent()!=null){
-				if (d.getEvent().toString().equals("publication")){
-					mDate = d.getValue();
-				} else {
-					mDate = "Fecha desconocida";
-				}
+			if (d!=null){
+				Log.i("out", d.toString());
+				mDate = d.toString();
 			} else mDate = "Fecha desconocida";
 				
 		}		
