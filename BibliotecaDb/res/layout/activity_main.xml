@@ -9,7 +9,8 @@
         android:layout_height="60dp"
         android:layout_gravity="center_vertical"
         android:layout_margin="5dp"
-        android:src="@drawable/ic_launcher" >
+        android:src="@drawable/book_icon"
+        android:clickable="true" >
     </ImageView>
 
     <LinearLayout

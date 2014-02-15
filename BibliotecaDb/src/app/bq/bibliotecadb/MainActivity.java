@@ -1,11 +1,6 @@
 package app.bq.bibliotecadb;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -15,12 +10,10 @@ import java.util.Locale;
 
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Date;
-import nl.siegmann.epublib.epub.EpubReader;
 
 import com.dropbox.client2.DropboxAPI;
 import com.dropbox.client2.DropboxAPI.DeltaEntry;
 import com.dropbox.client2.DropboxAPI.DeltaPage;
-import com.dropbox.client2.DropboxAPI.DropboxFileInfo;
 import com.dropbox.client2.DropboxAPI.Entry;
 import com.dropbox.client2.android.AndroidAuthSession;
 import com.dropbox.client2.exception.DropboxException;
@@ -28,12 +21,13 @@ import com.dropbox.client2.session.AppKeyPair;
 
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Environment;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,7 +42,7 @@ public class MainActivity extends ListActivity {
 	//Elementos de conectividad con Dropbox.
 	private AppKeyPair mAppKeys;
 	private AndroidAuthSession mSession;
-	private DropboxAPI<AndroidAuthSession> mApi;
+	private static DropboxAPI<AndroidAuthSession> mApi;
 	
 	//Elementos de almacenamiento de datos
 	public static final int MODE_TITLE = 0;
@@ -180,7 +174,7 @@ public class MainActivity extends ListActivity {
 				if ((!e.metadata.isDir) && (isEpub(e.metadata.fileName()))) {
 
 					//Esta consulta comprobará si el título ya está en la base de datos
-				    String sql = "SELECT * FROM Book WHERE Id = '" + e.metadata.fileName() + "'";
+				    String sql = "SELECT * FROM Book WHERE Id = '" + e.metadata.parentPath()+e.metadata.fileName() + "'";
 				    Log.i("out", "Searching for " + e.metadata.fileName());
 				   
 				   //Obtiene el cursor al primer elemento, si existe es que se encuentra en la bd
@@ -191,23 +185,14 @@ public class MainActivity extends ListActivity {
 						insertElement(book_element);
 					//Si no se encuentra lo añadimos	
 					}else {	
-					
-						//Se obtiene el directorio de almacenamiento externo para guardar los archivos temporales
-						String filePath =  Environment.getExternalStorageDirectory().toString();
-						File file = new File(filePath + "/temp.epub");
-						Log.i("out",file.getAbsolutePath());
+											
+						BookDownloader bd = new BookDownloader(mApi, e.metadata.parentPath()+e.metadata.fileName());
 						
-						//Se crea un nuevo archivo para descargar desde la carpeta de Dropbox
-						FileOutputStream outputStream = new FileOutputStream(file);
-						DropboxFileInfo info = mApi.getFile(e.metadata.parentPath()+e.metadata.fileName(), null, outputStream, null);
-						Log.i("out", info.getMetadata().parentPath() + "  " + info.getMetadata().fileName());
+						Book book = bd.startDownloader();
+						readEpub(book, e.metadata.parentPath()+e.metadata.fileName());
 						
-						//Se llama a la función que lee los metadatos del archivo
-						readEpub(file.getAbsolutePath(), e.metadata.fileName());
 						
-						//Se limpian los archivos temporales y se libera memoria
-						file.delete();
-						outputStream.close();
+
 						
 					}
 				}			
@@ -215,10 +200,6 @@ public class MainActivity extends ListActivity {
 			}
 			
 		} catch (DropboxException e) {
-			e.printStackTrace();
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
@@ -281,48 +262,30 @@ public class MainActivity extends ListActivity {
 	/**
 	 * Esta función leerá los metadatos del archivo .epub para incluirlos a la lista de libros
 	 * que se mostrará por pantalla. Se puede extender para incluir más parámetros.
-	 * @param filename
+	 * 
 	 */
-	public void readEpub(String filename, String id){
+	public void readEpub(Book book, String id){
 		
-		 try {
-	            //Crear un inputstream hacia el archivo
-			 	InputStream epubInputStream =  new FileInputStream(filename);
+        //Obtiene los metadatos necesarios
+        Log.i("author", "Author: " + book.getMetadata().getAuthors());
+        Log.i("title", "Title: " + book.getTitle());
+        Log.i("date", "Date: " + book.getMetadata().getDates());
+        Log.i("hash", "Id: " + id);
+        
+		
+	    //Introduce los valores en la base de datos
+	    ContentValues values = new ContentValues();
+	    values.put("Title", book.getTitle());
+	    values.put("Date", parseDate(book.getMetadata().getDates()));
+	    values.put("Id", id);
+	    mDB.insert("Book", null, values);
+	    Log.i("out", "Record doesn't exist yet but was inserted.");
+        
+        //Se introducen los datos necesarios en la nueva clase BookElement para hacer más sencillo su gestión
+        BookElement book_element = new BookElement(book.getTitle(), parseDate(book.getMetadata().getDates()), book.getMetadata().getAuthors().toString(),  id);
+        insertElement(book_element);
 
-	            //Carga el Book al epubreader para leer los metadatos
-	            Book book = (new EpubReader()).readEpub(epubInputStream);
-	           
-
-	            //Obtiene los metadatos necesarios
-	            Log.i("author", "Author: " + book.getMetadata().getAuthors());
-	            Log.i("title", "Title: " + book.getTitle());
-	            Log.i("date", "Date: " + book.getMetadata().getDates());
-	            Log.i("hash", "Id: " + id);
-	            
-				
-			    //Introduce los valores en la base de datos
-			    ContentValues values = new ContentValues();
-			    values.put("Title", book.getTitle());
-			    values.put("Date", parseDate(book.getMetadata().getDates()));
-			    values.put("Id", id);
-			    mDB.insert("Book", null, values);
-			    Log.i("out", "Record doesn't exist yet but was inserted.");
-	            
-	            //Se introducen los datos necesarios en la nueva clase BookElement para hacer más sencillo su gestión
-	            BookElement book_element = new BookElement(book.getTitle(), parseDate(book.getMetadata().getDates()), book.getMetadata().getAuthors().toString(),  id);
-	            insertElement(book_element);
-
-	            /* Log the book's coverimage property */
-	            // Bitmap coverImage =
-	            // BitmapFactory.decodeStream(book.getCoverImage()
-	            // .getInputStream());
-	            // Log.i("epublib", "Coverimage is " + coverImage.getWidth() +
-	            // " by "
-	            // + coverImage.getHeight() + " pixels");
-
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	        }
+        
 	}
 	   
    }
@@ -380,6 +343,47 @@ public class MainActivity extends ListActivity {
 		
 	   return d;
    }
+   
+   /**
+    * Método para descargar la portada del libro. Se realiza de nuevo la descarga del libro según
+    * el parámetro Id que es la ruta completa del archivo y se obtiene la portada mediante los
+    * métodos de epublib de getCoverImage()
+    * Se ha declarado el método estático para poder accederlo desde la clase BookAdapter.   
+    * @param path
+    */
+   public static void getCover(String path){
+	   
+	   final String mPath = path;
+	
+	   //Es necesario crear un AsyncTask para poder realizar la descarga.
+	   new AsyncTask<String, Void, Boolean>(){
+	   	   
+		@Override
+		protected Boolean doInBackground(String... arg0) {
+			
+			BookDownloader bd = new BookDownloader(mApi, mPath);
+			
+			Book book = bd.startDownloader();
+			
+			//Se utiliza el método getCoverImage de epublib para obtener la portada del epub
+	        Bitmap coverImage;
+			try {
+				coverImage = BitmapFactory.decodeStream(book.getCoverImage()
+				.getInputStream());
+		        Log.i("epublib", "Coverimage is " + coverImage.getWidth() +
+		                " by " +
+		                coverImage.getHeight() + " pixels");
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+	   }.execute();
+   }
+   
+   
+   
+   
    
    /**
     * Esta función ordena los elementos de la lista según el modo seleccionado, ya sea
