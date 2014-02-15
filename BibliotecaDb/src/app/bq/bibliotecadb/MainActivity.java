@@ -393,7 +393,7 @@ public class MainActivity extends ListActivity {
 	   switch(mode){
 	   
 		   case MODE_TITLE:{
-			   
+			   Log.i("out","Sorting by Title");
 			   mBookAdapter.sort(new Comparator<BookElement>() {
 				    public int compare(BookElement arg0, BookElement arg1) {
 				        return arg0.getTitle().compareTo(arg1.getTitle());
@@ -402,7 +402,7 @@ public class MainActivity extends ListActivity {
 			   
 		   }break;
 		   case MODE_DATE:{
-			   
+			   Log.i("out","Sorting by Date");
 			   mBookAdapter.sort(new Comparator<BookElement>() {
 				    public int compare(BookElement arg0, BookElement arg1) {
 				        return arg0.getDate().compareTo(arg1.getDate());
