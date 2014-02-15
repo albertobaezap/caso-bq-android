@@ -1,6 +1,5 @@
 package app.bq.bibliotecadb;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -27,7 +26,6 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,7 +40,7 @@ public class MainActivity extends ListActivity {
 	//Elementos de conectividad con Dropbox.
 	private AppKeyPair mAppKeys;
 	private AndroidAuthSession mSession;
-	private static DropboxAPI<AndroidAuthSession> mApi;
+	private DropboxAPI<AndroidAuthSession> mApi;
 	
 	//Elementos de almacenamiento de datos
 	public static final int MODE_TITLE = 0;
@@ -219,7 +217,7 @@ public class MainActivity extends ListActivity {
 		//setListAdapter(new ArrayAdapter<BookElement>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
 		
 		//Construimos un nuevo adaptador para introducir los datos en la lista
-		mBookAdapter = new BookAdapter(MainActivity.this, R.layout.activity_main, mFileList);
+		mBookAdapter = new BookAdapter(MainActivity.this, R.layout.activity_main, mFileList, mApi);
 		setListAdapter(mBookAdapter);
 				
 		
@@ -237,7 +235,7 @@ public class MainActivity extends ListActivity {
         mProgressDialog.show();
 		
 	}
-	
+		
 	/**
 	 * Esta función comprobará cada archivo individualmente antes de descargarlo para
 	 * asegurarse de que es un archivo .epub
@@ -344,43 +342,12 @@ public class MainActivity extends ListActivity {
 	   return d;
    }
    
-   /**
-    * Método para descargar la portada del libro. Se realiza de nuevo la descarga del libro según
-    * el parámetro Id que es la ruta completa del archivo y se obtiene la portada mediante los
-    * métodos de epublib de getCoverImage()
-    * Se ha declarado el método estático para poder accederlo desde la clase BookAdapter.   
-    * @param path
-    */
-   public static void getCover(String path){
-	   
-	   final String mPath = path;
-	
-	   //Es necesario crear un AsyncTask para poder realizar la descarga.
-	   new AsyncTask<String, Void, Boolean>(){
-	   	   
-		@Override
-		protected Boolean doInBackground(String... arg0) {
-			
-			BookDownloader bd = new BookDownloader(mApi, mPath);
-			
-			Book book = bd.startDownloader();
-			
-			//Se utiliza el método getCoverImage de epublib para obtener la portada del epub
-	        Bitmap coverImage;
-			try {
-				coverImage = BitmapFactory.decodeStream(book.getCoverImage()
-				.getInputStream());
-		        Log.i("epublib", "Coverimage is " + coverImage.getWidth() +
-		                " by " +
-		                coverImage.getHeight() + " pixels");
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			return null;
-		}
-	   }.execute();
-   }
    
+   
+   
+   public void showCover(Bitmap cover){
+	   
+   }
    
    
    
