@@ -17,15 +17,15 @@ public class BookElement {
 	private String mTitle;
 	private String mDate;
 	private String mAuthor;
-	private int mId;
+	private String mId;
 	
 	//Datos en crudo para parsear
 	private List<Date> mDateRaw;
 	
-	public BookElement(String t, List<Date> d, String a, int i){
+	public BookElement(String t, String d, String a, String i){
 		
 		mTitle = t;
-		mDateRaw = d;
+		mDate = d;
 		mAuthor = a;
 		mId = i;
 		
@@ -41,7 +41,7 @@ public class BookElement {
 		return mDate;
 	}
 	
-	public int getId(){
+	public String getId(){
 		return mId;
 	}
 	

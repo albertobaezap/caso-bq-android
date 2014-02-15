@@ -6,8 +6,11 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import nl.siegmann.epublib.domain.Book;
 import nl.siegmann.epublib.domain.Date;
@@ -143,26 +146,17 @@ public class MainActivity extends ListActivity {
 				if ((!e.metadata.isDir) && (isEpub(e.metadata.fileName()))) {
 
 					//Esta consulta comprobará si el título ya está en la base de datos
-				    String sql = "SELECT * FROM Book WHERE Title = '" + e.metadata.fileName() + "'";	
+				    String sql = "SELECT * FROM Book WHERE Id = '" + e.metadata.fileName() + "'";
+				    Log.i("out", "Searching for " + e.metadata.fileName());
 				   
 				   //Obtiene el cursor al primer elemento, si existe es que se encuentra en la bd
 				    Cursor c = mDB.rawQuery(sql, null);
 					if (c.moveToFirst()){
-						//TODO Implementar correcto parseo de fecha
-						List<Date> ld = null ;
-						Log.i("out", "Record exists");
-						BookElement book_element = new BookElement(c.getString(0), ld, c.getString(1), 0);
+						Log.i("out", "Record exists: " + c.getString(0) + "  " + c.getString(1) + "  " + c.getString(2));
+						BookElement book_element = new BookElement(c.getString(0), c.getString(1), "Author", c.getString(2));
 						insertElement(book_element);
 					//Si no se encuentra lo añadimos	
-					}else {
-						
-					    // Create a new map of values, where column names are the keys
-					    ContentValues values = new ContentValues();
-					    values.put("Title", e.metadata.fileName());
-					    values.put("Date", e.metadata.modified);
-					    mDB.insert("Book", null, values);
-					    Log.i("out", "Record doesn't exist yet but was inserted.");
-			
+					}else {	
 					
 						//Se obtiene el directorio de almacenamiento externo para guardar los archivos temporales
 						String filePath =  Environment.getExternalStorageDirectory().toString();
@@ -175,14 +169,14 @@ public class MainActivity extends ListActivity {
 						Log.i("out", info.getMetadata().parentPath() + "  " + info.getMetadata().fileName());
 						
 						//Se llama a la función que lee los metadatos del archivo
-						readEpub(file.getAbsolutePath());
+						readEpub(file.getAbsolutePath(), e.metadata.fileName());
 						
 						//Se limpian los archivos temporales y se libera memoria
 						file.delete();
 						outputStream.close();
+						
 					}
-				}
-				
+				}			
 				//Log.i("out", book.getTitle() + " " + book.getDate() + " " + book.getId());
 			}
 			
@@ -253,7 +247,7 @@ public class MainActivity extends ListActivity {
 	 * que se mostrará por pantalla. Se puede extender para incluir más parámetros.
 	 * @param filename
 	 */
-	public void readEpub(String filename){
+	public void readEpub(String filename, String id){
 		
 		 try {
 	            //Crear un inputstream hacia el archivo
@@ -267,9 +261,19 @@ public class MainActivity extends ListActivity {
 	            Log.i("author", "Author: " + book.getMetadata().getAuthors());
 	            Log.i("title", "Title: " + book.getTitle());
 	            Log.i("date", "Date: " + book.getMetadata().getDates());
+	            Log.i("hash", "Id: " + id);
+	            
+				
+			    //Introduce los valores en la base de datos
+			    ContentValues values = new ContentValues();
+			    values.put("Title", book.getTitle());
+			    values.put("Date", parseDate(book.getMetadata().getDates()));
+			    values.put("Id", id);
+			    mDB.insert("Book", null, values);
+			    Log.i("out", "Record doesn't exist yet but was inserted.");
 	            
 	            //Se introducen los datos necesarios en la nueva clase BookElement para hacer más sencillo su gestión
-	            BookElement book_element = new BookElement(book.getTitle(), book.getMetadata().getDates(), book.getMetadata().getAuthors().toString(),  0);
+	            BookElement book_element = new BookElement(book.getTitle(), parseDate(book.getMetadata().getDates()), book.getMetadata().getAuthors().toString(),  id);
 	            insertElement(book_element);
 
 	            /* Log the book's coverimage property */
@@ -299,8 +303,46 @@ public class MainActivity extends ListActivity {
 	    
 	}
    
+   /**
+    * ESta función inserta un elemento en la lista
+    * @param book_element
+    */
    public void insertElement(BookElement book_element){
 		mFileList.add(book_element);
+   }
+   
+   /**
+    * Esta función formatea la fecha a un valor constante y legible
+    * @param list
+    * @return La fecha formateada yy-MM-dd
+    */
+   public String parseDate(List<Date> list){
+
+	   //Si no se consigue convertir, se pone desconocida por defecto
+	   String d = "Fecha desconocida";
+	   
+	   try{
+		   //Formato de conversión
+		   SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+		   
+		   for (Date e : list){
+			   			   
+				if (e!=null){
+					 //La fecha se tiene que convertir en un formato Date normal
+					 java.util.Date dt = sdf.parse(e.getValue());
+					 
+					 d = sdf.format(dt);
+				} 	
+			}	
+    
+	   }catch (IllegalArgumentException e){
+		 e.printStackTrace();  
+	   } catch (ParseException e) {
+		e.printStackTrace();
+	}
+	   
+		
+	   return d;
    }
     
 }
