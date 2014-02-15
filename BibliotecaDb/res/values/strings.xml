@@ -2,7 +2,9 @@
 <resources>
 
     <string name="app_name">BibliotecaDb</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_order">Ordenar</string>
+    <string name="order_title">Por título</string>
+    <string name="order_date">Por fecha</string>
     <string name="title_activity_main">MainActivity</string>
     <string name="progress_dialog_text">Espere un momento mientras se obtienen los archivos.</string>
 

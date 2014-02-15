@@ -9,6 +9,7 @@ import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -34,6 +35,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
+import android.view.Menu;
 
 public class MainActivity extends ListActivity {
 
@@ -48,10 +50,13 @@ public class MainActivity extends ListActivity {
 	private DropboxAPI<AndroidAuthSession> mApi;
 	
 	//Elementos de almacenamiento de datos
+	public static final int MODE_TITLE = 0;
+	public static final int MODE_DATE = 1;
 	private ArrayList<BookElement> mFileList;
+	private BookAdapter mBookAdapter;
 	
 	//Elementos adicionales
-	SQLiteDatabase mDB;
+	private SQLiteDatabase mDB;
 	
 	
     @Override
@@ -87,6 +92,13 @@ public class MainActivity extends ListActivity {
 				} 
     		} else Log.i("out", "Auth failed");
     		
+    }
+    
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu){
+    	getMenuInflater().inflate(R.menu.main, menu);
+    	
+    	return true;
     }
     
     /**
@@ -204,8 +216,12 @@ public class MainActivity extends ListActivity {
 		//setListAdapter(new ArrayAdapter<BookElement>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
 		
 		//Construimos un nuevo adaptador para introducir los datos en la lista
-		BookAdapter bookAdapter = new BookAdapter(MainActivity.this, R.layout.activity_main, mFileList);
-		setListAdapter(bookAdapter);
+		mBookAdapter = new BookAdapter(MainActivity.this, R.layout.activity_main, mFileList);
+		setListAdapter(mBookAdapter);
+		
+		sortList(MODE_TITLE);
+		
+		
 	}
 	
 	/**
@@ -343,6 +359,25 @@ public class MainActivity extends ListActivity {
 	   
 		
 	   return d;
+   }
+   
+   /**
+    * Esta función ordena los elementos de la lista según el modo seleccionado, ya sea
+    * por título o por fecha. Para ello se hace uso de la función sort sobre un Comparador
+    * personalizado que toma los elementos necesarios de la clase BookElement.
+    * @param mode
+    * @param adapter
+    */
+   public void sortList(int mode){
+	   
+	   mBookAdapter.sort(new Comparator<BookElement>() {
+		    public int compare(BookElement arg0, BookElement arg1) {
+		        return arg0.getTitle().compareTo(arg1.getTitle());
+		    }
+		});
+
+		mBookAdapter.notifyDataSetChanged();
+	   
    }
     
 }
