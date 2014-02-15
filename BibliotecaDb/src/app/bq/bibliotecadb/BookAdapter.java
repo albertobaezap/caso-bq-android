@@ -131,7 +131,8 @@ public class BookAdapter extends ArrayAdapter<BookElement> {
 					//Se crea un nuevo diálogo para mostrar la portada en el hilo original
 					dialog = new AlertDialog.Builder(mContext);
 					ImageView iv = new ImageView(mContext);
-					iv.setImageBitmap(coverImage);        
+					iv.setImageBitmap(coverImage);
+					dialog.setView(iv);
 			        
 				} catch (IOException e) {
 					e.printStackTrace();
