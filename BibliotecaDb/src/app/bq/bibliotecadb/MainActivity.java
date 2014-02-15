@@ -36,6 +36,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 
 public class MainActivity extends ListActivity {
 
@@ -94,11 +95,32 @@ public class MainActivity extends ListActivity {
     		
     }
     
+    //Sobreescribe el menú para utilizar el que he creado
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
     	getMenuInflater().inflate(R.menu.main, menu);
     	
     	return true;
+    }
+    
+    //Sobreescribe el método para dar funcionalidad a las opciones del menú
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+    	
+        switch (item.getItemId()) {
+            case R.id.action_order_1:
+            	
+            	sortList(MODE_TITLE);
+            	
+                return true;
+            case R.id.action_order_2:
+            	
+            	sortList(MODE_DATE);
+            	
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
     
     /**
@@ -218,9 +240,7 @@ public class MainActivity extends ListActivity {
 		//Construimos un nuevo adaptador para introducir los datos en la lista
 		mBookAdapter = new BookAdapter(MainActivity.this, R.layout.activity_main, mFileList);
 		setListAdapter(mBookAdapter);
-		
-		sortList(MODE_TITLE);
-		
+				
 		
 	}
 	
@@ -370,14 +390,34 @@ public class MainActivity extends ListActivity {
     */
    public void sortList(int mode){
 	   
-	   mBookAdapter.sort(new Comparator<BookElement>() {
-		    public int compare(BookElement arg0, BookElement arg1) {
-		        return arg0.getTitle().compareTo(arg1.getTitle());
-		    }
-		});
-
-		mBookAdapter.notifyDataSetChanged();
+	   switch(mode){
 	   
+		   case MODE_TITLE:{
+			   
+			   mBookAdapter.sort(new Comparator<BookElement>() {
+				    public int compare(BookElement arg0, BookElement arg1) {
+				        return arg0.getTitle().compareTo(arg1.getTitle());
+				    }
+				});
+			   
+		   }break;
+		   case MODE_DATE:{
+			   
+			   mBookAdapter.sort(new Comparator<BookElement>() {
+				    public int compare(BookElement arg0, BookElement arg1) {
+				        return arg0.getDate().compareTo(arg1.getDate());
+				    }
+				});
+			   
+		   }break;
+	   }
+	   
+	   
+	   
+		mBookAdapter.notifyDataSetChanged();
+		
+		
+			   
    }
     
 }

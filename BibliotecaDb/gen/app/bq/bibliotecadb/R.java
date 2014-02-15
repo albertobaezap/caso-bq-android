@@ -24,7 +24,8 @@ public final class R {
         public static final int ic_launcher=0x7f020000;
     }
     public static final class id {
-        public static final int action_settings=0x7f080004;
+        public static final int action_order_1=0x7f080004;
+        public static final int action_order_2=0x7f080005;
         public static final int list_date=0x7f080003;
         public static final int list_icon=0x7f080000;
         public static final int list_label=0x7f080002;
@@ -37,10 +38,11 @@ public final class R {
         public static final int main=0x7f070000;
     }
     public static final class string {
-        public static final int action_settings=0x7f050001;
         public static final int app_name=0x7f050000;
-        public static final int progress_dialog_text=0x7f050003;
-        public static final int title_activity_main=0x7f050002;
+        public static final int order_date=0x7f050002;
+        public static final int order_title=0x7f050001;
+        public static final int progress_dialog_text=0x7f050004;
+        public static final int title_activity_main=0x7f050003;
     }
     public static final class style {
         /** 
