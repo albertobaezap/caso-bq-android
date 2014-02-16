@@ -25,7 +25,6 @@ import android.app.ProgressDialog;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.graphics.Bitmap;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -49,7 +48,8 @@ public class MainActivity extends ListActivity {
 	private BookAdapter mBookAdapter;
 	
 	//Elementos adicionales
-	private SQLiteDatabase mDB;
+	private SQLiteDatabase mDb;
+	private DatabaseHelper mDbHelper;
 	
 	
     @Override
@@ -58,9 +58,7 @@ public class MainActivity extends ListActivity {
         
         //Inicio de sesión
         startSession();
-        
-        //Crea la base de datos
-        createDB();
+
   
     }
     /**
@@ -143,6 +141,9 @@ public class MainActivity extends ListActivity {
 		   super.onPreExecute();
 		   
 		   createProgressDialog();	  
+	        
+	        //Crea la base de datos en pre-execute para poder acceder a ella al volver
+	        createDB();
 		   
 	   }
 	   
@@ -176,7 +177,7 @@ public class MainActivity extends ListActivity {
 				    Log.i("out", "Searching for " + e.metadata.fileName());
 				   
 				   //Obtiene el cursor al primer elemento, si existe es que se encuentra en la bd
-				    Cursor c = mDB.rawQuery(sql, null);
+				    Cursor c = mDb.rawQuery(sql, null);
 					if (c.moveToFirst()){
 						Log.i("out", "Record exists: " + c.getString(0) + "  " + c.getString(1) + "  " + c.getString(2));
 						BookElement book_element = new BookElement(c.getString(0), c.getString(1), "Author", c.getString(2));
@@ -213,8 +214,10 @@ public class MainActivity extends ListActivity {
 		super.onPostExecute(result);
 		
 		mProgressDialog.dismiss();
-		mDB.close();
-		//setListAdapter(new ArrayAdapter<BookElement>(MainActivity.this, R.layout.activity_main, R.id.list_label, mFileList));
+		
+		//Hay cerrar la base de datos cuando acabemos de usarla
+		mDb.close();
+		mDbHelper.close();
 		
 		//Construimos un nuevo adaptador para introducir los datos en la lista
 		mBookAdapter = new BookAdapter(MainActivity.this, R.layout.activity_main, mFileList, mApi);
@@ -276,7 +279,7 @@ public class MainActivity extends ListActivity {
 	    values.put("Title", book.getTitle());
 	    values.put("Date", parseDate(book.getMetadata().getDates()));
 	    values.put("Id", id);
-	    mDB.insert("Book", null, values);
+	    mDb.insert("Book", null, values);
 	    Log.i("out", "Record doesn't exist yet but was inserted.");
         
         //Se introducen los datos necesarios en la nueva clase BookElement para hacer más sencillo su gestión
@@ -293,11 +296,9 @@ public class MainActivity extends ListActivity {
     */
    public void createDB(){
 	   
-	   DatabaseHelper mDbHelper = new DatabaseHelper(this);
-	   
-	   mDB = mDbHelper.getWritableDatabase();
-
-	    
+	   mDbHelper = new DatabaseHelper(this);
+	  	   
+	   mDb = mDbHelper.getWritableDatabase();	    
 	}
    
    /**
@@ -340,13 +341,6 @@ public class MainActivity extends ListActivity {
 	   
 		
 	   return d;
-   }
-   
-   
-   
-   
-   public void showCover(Bitmap cover){
-	   
    }
    
    

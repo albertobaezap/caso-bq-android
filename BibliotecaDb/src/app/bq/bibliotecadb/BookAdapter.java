@@ -99,7 +99,7 @@ public class BookAdapter extends ArrayAdapter<BookElement> {
 		
 	}
 	
-	/**
+		/**
 	    * Método para descargar la portada del libro. Se realiza de nuevo la descarga del libro según
 	    * el parámetro Id que es la ruta completa del archivo y se obtiene la portada mediante los
 	    * métodos de epublib de getCoverImage()  
