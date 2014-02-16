@@ -105,7 +105,12 @@ public class MainActivity extends ListActivity {
     				 }
     				 
     				 //Ponemos en login la aplicación
-    				 mLoggedIn = true;
+    				 
+    				 if (!mLoggedIn){
+    					//Llama a la funcionalidad principal de la aplicación para listar los archivos
+						new ListFiles().execute();
+						mLoggedIn = true;
+    				 }
     				 
     				Log.i("out","Auth succesful");
     			} catch (IllegalStateException e) {
