@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ContentValues;
+import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
@@ -51,6 +52,12 @@ public class MainActivity extends ListActivity {
 	private SQLiteDatabase mDb;
 	private DatabaseHelper mDbHelper;
 	
+	//Elementos de SharedPreferences
+    final static private String ACCOUNT_PREFS_NAME = "prefs";
+    final static private String ACCESS_KEY_NAME = "ACCESS_KEY";
+    final static private String ACCESS_SECRET_NAME = "ACCESS_SECRET";
+    public boolean mLoggedIn;
+	
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,7 +65,21 @@ public class MainActivity extends ListActivity {
         
         //Inicio de sesión
         startSession();
+        
+        mApi = new DropboxAPI<AndroidAuthSession>(mSession); //Nueva instancia de sesión 
+        
+        //Si ya estamos logeados no hace falta volver a crear la sesión
+        if (mLoggedIn) {
+        	//Llama a la funcionalidad principal de la aplicación para listar los archivos
+			new ListFiles().execute();
 
+        } else {
+        	 Log.i("out", "Logging in");
+            	//Si no estamos logeados tenemos que crear una nueva sesión
+            	mApi.getSession().startOAuth2Authentication(MainActivity.this); //Inicia intento de autentificación          
+        }
+        
+       
   
     }
     /**
@@ -74,14 +95,26 @@ public class MainActivity extends ListActivity {
     			try{
     				//Necesario para completar la autentificación
     				mApi.getSession().finishAuthentication();
+    				String accessToken = mApi.getSession().getOAuth2AccessToken();    	
     				
-    				//Llama a la funcionalidad principal de la aplicación para listar los archivos
-    				new ListFiles().execute();
+    				//Si no tenemos un token de sesión, lo almacenamos en SharedPreferences
+    				 if (accessToken != null) {
+    			            SharedPreferences prefs = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
+    			            prefs.edit().putString(ACCESS_KEY_NAME, "auth").commit();
+    			            prefs.edit().putString(ACCESS_SECRET_NAME, accessToken).commit();     
+    				 }
+    				 
+    				 //Ponemos en login la aplicación
+    				 mLoggedIn = true;
+    				 
     				Log.i("out","Auth succesful");
     			} catch (IllegalStateException e) {
 					e.printStackTrace();
 				} 
-    		} else Log.i("out", "Auth failed");
+    		} else {
+    			Log.i("out", "Auth failed");
+    			
+    		}
     		
     }
     
@@ -121,9 +154,22 @@ public class MainActivity extends ListActivity {
     	
     	 mAppKeys = new AppKeyPair(APP_KEY, APP_SECRET); //Guarda la clave y secreto de la API
          mSession = new AndroidAuthSession(mAppKeys); //Guarda la sesión de autentificación
-         mApi = new DropboxAPI<AndroidAuthSession>(mSession); //Nueva instancia de sesión
-         mApi.getSession().startOAuth2Authentication(MainActivity.this); //Inicia intento de autentificación
          
+         
+         //Buscamos en shared preferences el token de la aplicación
+         SharedPreferences prefs = getSharedPreferences(ACCOUNT_PREFS_NAME, 0);
+         String key = prefs.getString(ACCESS_KEY_NAME, null);
+         String secret = prefs.getString(ACCESS_SECRET_NAME, null);
+         
+         if (key == null || secret == null || key.length() == 0 || secret.length() == 0) return;
+  
+         //Si ya estamos logeados no tenemos que crear una nueva essión
+         if (key.equals("auth")) {  
+        	 Log.i("out", "Already logged in with secret: " + secret);
+             mSession.setOAuth2AccessToken(secret);
+             mLoggedIn = true;
+         }
+ 	  
     }
     
    /**
