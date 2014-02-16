@@ -5,7 +5,7 @@ Caso de desarrollo de aplicación para bq.
 
 En cada commit se encuentran los comentarios sobre el desarrollo de la aplicación
 
-
+![ScreenShot](https://raw2.github.com/albertobaezap/caso-bq-android/master/Capturas/Captura%20Final.png)
 
 Resumen de cómo se ha implementado cada punto:
 --
@@ -30,7 +30,9 @@ Resumen de cómo se ha implementado cada punto:
 
 	Recursos: Dropbox Core API, Epublib.
 
-	Para mostrar la portada del libro se ha implementado un método en la clase BookAdapter que descarga de nuevo el libro utilizando un Id almacenado (la ruta completa del archivo en Dropbox) y obteniendo la portada desde el libro utilizando el método getCoverImage() de Epublib. Para mostrarla se ha utilizado simplemente un Dialogo que muestra la portada, y se cierra pulsando el botón de Back. (Ver: Captura2)
+	Para mostrar la portada del libro se ha implementado un método en la clase BookAdapter que descarga de nuevo el libro utilizando un Id almacenado (la ruta completa del archivo en Dropbox) y obteniendo la portada desde el libro utilizando el método getCoverImage() de Epublib. Para mostrarla se ha utilizado simplemente un Dialogo que muestra la portada, y se cierra pulsando el botón de Back.
+	
+![ScreenShot](https://raw2.github.com/albertobaezap/caso-bq-android/master/Capturas/Captura2.png)	
 
 Finalmente se proponen unas sencillas mejoras para la aplicación que
 ayudarían a su funcionamiento y que no se han terminado de implementar
