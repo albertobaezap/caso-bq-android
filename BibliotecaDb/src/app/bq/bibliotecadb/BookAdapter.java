@@ -22,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 
 /**
@@ -136,6 +137,8 @@ public class BookAdapter extends ArrayAdapter<BookElement> {
 			        
 				} catch (IOException e) {
 					e.printStackTrace();
+				} catch (NullPointerException e){
+					e.printStackTrace();
 				}
 				return null;
 			}
@@ -144,7 +147,13 @@ public class BookAdapter extends ArrayAdapter<BookElement> {
 			public void onPostExecute(Boolean result){
 				super.onPostExecute(result);
 				
-				dialog.show();
+				try{
+					dialog.show();
+				}catch (NullPointerException e){
+					e.printStackTrace(); //Si no existe diálogo es que no había portada.
+					Toast.makeText(mContext, "No se ha encontrado portada.", Toast.LENGTH_LONG).show();
+				}
+				
 							
 			}
 		   }.execute();
